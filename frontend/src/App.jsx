@@ -4,9 +4,17 @@ import UserPage from "./pages/adminPages/UserPage";
 import HomePage from "./pages/HomePage"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import CompanyPage from "./pages/adminPages/CompanyPage";
+import api from "./api/axios";
+import { useEffect } from "react";
+
 
 
 function App() {
+
+  useEffect(() => {
+      api.get("/csrf/");
+  }, []);
+
   return (
     <Router>
       <Routes>

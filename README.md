@@ -69,6 +69,7 @@ npm install
 ```bash
 cd frontend
 npm install
+copy .env.example .env
 npm run dev
 ```
 - For Another Time

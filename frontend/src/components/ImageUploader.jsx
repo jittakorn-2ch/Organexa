@@ -1,0 +1,67 @@
+import { Plus, Trash2 } from "lucide-react";
+
+function ImageUploader({ image, setImage }) {
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage({
+                file: file,
+                preview: URL.createObjectURL(file),
+            });
+        }
+    };
+
+    const removeImage = () => {
+        setImage({
+            file: null,
+            preview: null,
+        });
+    };
+
+    return (
+        <div className="flex flex-col items-center gap-2">
+
+            {/* Input file */}
+            <input
+                id="image-input"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+            />
+
+            {/* Image preview container */}
+            <label
+                htmlFor="image-input"
+                className="relative w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-200"
+            >
+                {image?.preview ? (
+                    <>
+                        <img
+                            src={image.preview}
+                            alt="Uploaded"
+                            className="w-full h-full object-cover"
+                        />
+
+                        {/* Trash icon (overlay center) */}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                removeImage();
+                            }}
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 hover:opacity-100 transition cursor-pointer"
+                        >
+                            <Trash2 size={28} />
+                        </button>
+                    </>
+                ) : (
+                    <Plus size={28} className="text-gray-500 hover:opacity-100 transition cursor-pointer" />
+                )}
+            </label>
+        </div>
+    );
+}
+
+export default ImageUploader;

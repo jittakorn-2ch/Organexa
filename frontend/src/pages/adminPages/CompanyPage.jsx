@@ -1,175 +1,161 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import CompanyModal from "../adminPages/components/CompanyModal.jsx";
+import { addCompany, getCompanies, updateCompany } from "../../api/company.api.js";
+
 
 function CompanyPage() {
-    const [companies, setCompanies] = useState([
-        { id: 1, name: "Acme Corp", industry: "Biotech", location: "San Diego, CA", employees: 120 },
-        { id: 2, name: "Vertex Solutions", industry: "Software", location: "Austin, TX", employees: 48 },
-        { id: 3, name: "GreenHarvest", industry: "AgriTech", location: "Des Moines, IA", employees: 75 },
-    ]);
-
+    const [companies, setCompanies] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingCompany, setEditingCompany] = useState(null);
+    const [editingData, setEditingData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const [formData, setFormData] = useState({
-        name: "",
-        industry: "",
-        location: "",
-        employees: "",
-    });
-
-    const openAddModal = () => {
-        setEditingCompany(null);
-        setFormData({
-            name: "",
-            industry: "",
-            location: "",
-            employees: "",
-        });
-        setModalOpen(true);
-    };
-
-    const openEditModal = (company) => {
-        setEditingCompany(company);
-        setFormData(company);
-        setModalOpen(true);
-    };
-
-    const handleSave = () => {
-        if (editingCompany) {
-            // EDIT MODE
-            setCompanies((prev) =>
-                prev.map((c) =>
-                    c.id === editingCompany.id ? { ...editingCompany, ...formData } : c
-                )
-            );
-        } else {
-            // CREATE MODE
-            const newCompany = {
-                ...formData,
-                id: Date.now(),
-                employees: Number(formData.employees),
-            };
-            setCompanies((prev) => [...prev, newCompany]);
+    const fetchCompanies = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const companies = await getCompanies();
+            setCompanies(companies);
+        } catch (err) {
+            console.error("Failed to fetch companies", err);
+            setError("Error loading companies. Please check the API server.");
+        } finally {
+            setLoading(false);
         }
+    }, []);
 
+    useEffect(() => {
+        fetchCompanies();
+    }, [fetchCompanies]);
+
+
+    const openAdd = () => {
+        setEditingData(null);
+        setModalOpen(true);
+    };
+
+    const openEdit = (company) => {
+        setEditingData(company);
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
         setModalOpen(false);
+        setEditingData(null); 
     };
 
-    const handleDelete = (id) => {
-        setCompanies((prev) => prev.filter((c) => c.id !== id));
+    const saveCompany = async (data) => {
+        try {
+            let res;
+
+            console.log("Saving company data:", editingData);
+
+            if (editingData) {
+                res = await updateCompany(data.code, data);
+
+                setCompanies((prev) =>
+                    prev.map((c) =>
+                        c.code === data.code ? res.data : c
+                    )
+                );
+            } else {
+                res = await addCompany(data);
+
+                setCompanies((prev) => [
+                    res.data,
+                    ...prev,
+                ]);
+            }
+
+            closeModal();
+        } catch (error) {
+            console.error("Save company failed:", error);
+            alert("ไม่สามารถบันทึกข้อมูลได้");
+        }
     };
+
+    if (loading) {
+        return <div className="p-6 text-center text-indigo-600">Loading companies...</div>;
+    }
+
+    if (error) {
+        return <div className="p-6 text-center text-red-600 border border-red-300 bg-red-50 rounded-lg">{error}</div>;
+    }
 
     return (
-        <div className="mt-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Companies</h2>
+        <div className="p-6 max-w-7xl mx-auto">
+            {/* Header and Add Button */}
+            <div className="flex justify-between items-center mb-6 border-b pb-4">
+                <h2 className="text-3xl font-bold text-gray-800">🏢 Company Management</h2>
                 <button
-                    onClick={openAddModal}
-                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                    onClick={openAdd}
+                    className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg shadow-md transition duration-150 ease-in-out"
                 >
-                    + Add Company
+                    + Add New Company
                 </button>
             </div>
 
-            {/* Company Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {companies.map((company) => (
-                    <div
-                        key={company.id}
-                        className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition"
-                    >
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h3 className="text-lg font-semibold">{company.name}</h3>
-                                <p className="text-sm text-gray-500">
-                                    {company.industry} • {company.location}
-                                </p>
+            {/* Company Cards Grid */}
+            {companies.length === 0 ? (
+                <div className="text-center p-10 border-gray-300 text-gray-500">
+                    <p className="text-lg mb-2">No companies found.</p>
+                    <p>Click "Add New Company" to get started.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {companies.map((company) => (
+                        <div
+                            key={company.code}
+                            className="bg-white border border-gray-100 rounded-xl p-5 shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+                        >
+                            {/* Company Image/Logo */}
+                            {company.imageUrl && (
+                                <img
+                                    src={company.imageUrl}
+                                    alt={`${company.name} logo`}
+                                    className="w-full h-32 object-contain bg-gray-50 rounded-lg mb-3"
+                                />
+                            )}
+
+                            <h3 className="text-xl font-semibold text-gray-900 truncate">
+                                {company.name}
+                            </h3>
+                            <p className="text-sm text-indigo-600 font-medium mb-2">
+                                Code: {company.code || 'N/A'}
+                            </p>
+
+                            <p className="text-sm text-gray-600 flex-grow mb-3 line-clamp-2">
+                                {company.description || 'No description provided.'}
+                            </p>
+
+                            <p className="text-xs text-gray-500 mb-4 flex items-center">
+                                <span className="mr-1">📍</span> {company.address?.fullAddress || 'Address not listed'}
+                            </p>
+
+                            {/* Actions */}
+                            <div className="flex gap-3 pt-3 border-t border-gray-100">
+                                <button
+                                    onClick={() => openEdit(company)}
+                                    className="cursor-pointer flex-1 px-3 py-1 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-150"
+                                >
+                                    Edit
+                                </button>
                             </div>
-                            <span className="text-sm text-gray-600">
-                                {company.employees} emp
-                            </span>
                         </div>
-
-                        <div className="mt-4 flex gap-2">
-                            <button
-                                className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-                                onClick={() => openEditModal(company)}
-                            >
-                                Edit
-                            </button>
-                            <button
-                                className="px-3 py-1 border border-red-300 text-red-600 text-sm rounded hover:bg-red-100"
-                                onClick={() => handleDelete(company.id)}
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Modal */}
-            {modalOpen && (
-                <div className="fixed inset-0 bg-black/40 flex justify-center items-center p-4">
-                    <div className="bg-white w-full max-w-md rounded-lg shadow-lg p-6">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {editingCompany ? "Edit Company" : "Add New Company"}
-                        </h3>
-
-                        <div className="flex flex-col gap-3">
-                            <input
-                                type="text"
-                                placeholder="Company Name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="border p-2 rounded"
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Industry"
-                                value={formData.industry}
-                                onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                                className="border p-2 rounded"
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Location"
-                                value={formData.location}
-                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                className="border p-2 rounded"
-                            />
-
-                            <input
-                                type="number"
-                                placeholder="Employees"
-                                value={formData.employees}
-                                onChange={(e) => setFormData({ ...formData, employees: e.target.value })}
-                                className="border p-2 rounded"
-                            />
-                        </div>
-
-                        <div className="flex justify-end gap-2 mt-6">
-                            <button
-                                className="px-3 py-1 border rounded"
-                                onClick={() => setModalOpen(false)}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                                onClick={handleSave}
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             )}
+
+
+            {/* Modal Component */}
+            <CompanyModal
+                open={modalOpen}
+                initialData={editingData}
+                onSave={saveCompany} // This handles both create and update
+                onClose={closeModal}
+            />
         </div>
     );
 }
-
 
 export default CompanyPage;
