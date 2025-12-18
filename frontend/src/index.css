@@ -13,3 +13,64 @@
   background-color: #374151; /* gray-700 */
   border-radius: 10px;
 }
+
+/* Custom Input */
+input, textarea, select {
+    font-size: 14px;
+    padding: 6px 10px;
+    border: 1px solid #d1d5db; /* gray-300 */
+    width: 100%;
+}
+
+.input-container {
+  position: relative;
+}
+
+.input-container label {
+    position: absolute;
+    top: 7px;
+    left: 5px;
+    padding: 0 5px;
+    font-size: 12px;
+    color: gray;
+    font-weight: normal;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    -moz-transition: 0.2s ease all;
+    -webkit-transition: 0.2s ease all;
+}
+
+.input-container label.floated-label,
+.input-container input:focus ~ label,
+.input-container input:not(:placeholder-shown) ~ label,
+.input-container textarea:focus ~ label,
+.input-container textarea:not(:placeholder-shown) ~ label {
+  top: -13px;
+  left: -3px;
+  font-size: 9px;
+}
+
+.input-container input:focus,
+.input-container textarea:focus {
+  outline: none;
+  border-color: #808782; /* gray-400 */
+}
+
+.input-container label.required::after {
+  content: " *";
+  color: red;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+input.border-red, textarea.border-red {
+    border: 2px solid red;
+}

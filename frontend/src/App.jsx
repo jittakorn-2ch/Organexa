@@ -1,11 +1,12 @@
-import AdminLayout from "./pages/adminPages/components/AdminLayout";
 import DepartmentPage from "./pages/adminPages/DepartmentPage";
-import UserPage from "./pages/adminPages/UserPage";
 import HomePage from "./pages/HomePage"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import CompanyPage from "./pages/adminPages/CompanyPage";
 import api from "./api/axios";
 import { useEffect } from "react";
+import CompanyListPage from "./pages/adminPages/CompanyListPage";
+import AdminLayout from "./pages/adminPages/components/AdminLayout";
+import CompanyLayout from "./pages/adminPages/components/CompanyLayout";
+import EmployeePage from "./pages/adminPages/EmployeePage";
 
 
 
@@ -22,10 +23,14 @@ function App() {
 
         {/* ADMIN ROUTES */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<CompanyPage />} />
-          <Route path="departments" element={<DepartmentPage />} />
-          <Route path="users" element={<UserPage />} />
+          <Route index element={<CompanyListPage />} />
         </Route>
+
+        <Route path="/admin/companies" element={<CompanyLayout />}>
+          <Route index path=":companyCode/departments" element={<DepartmentPage />} />
+          <Route path=":companyCode/employees" element={<EmployeePage />} />
+        </Route>
+        
       </Routes>
     </Router>
   );

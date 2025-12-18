@@ -1,19 +1,21 @@
 import { useState } from "react";
 import Navbar from "../../../components/Navbar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 
-function AdminLayout() {
+
+function CompanyLayout() {
+    const { companyCode } = useParams();
 
     const features = [
         {
-            group: "Management",
             items: [
-                { key: "companies", label: "Companies", path: "/admin" },
+                { key: "departments", label: "Departments", path: `/admin/companies/${companyCode}/departments` },
+                { key: "employees", label: "Employees", path: `/admin/companies/${companyCode}/employees` },
             ],
         },
     ];
 
-    const [section, setSection] = useState("companies");
+    const [section, setSection] = useState("departments");
 
     return (
         <div className="flex h-screen font-sans text-gray-800 bg-gray-50">
@@ -25,4 +27,4 @@ function AdminLayout() {
     );
 }
 
-export default AdminLayout;
+export default CompanyLayout;

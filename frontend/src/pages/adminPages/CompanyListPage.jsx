@@ -1,14 +1,18 @@
 import { useEffect, useState, useCallback } from "react";
-import CompanyModal from "../adminPages/components/CompanyModal.jsx";
+import CompanyModal from "./components/CompanyModal.jsx";
 import { addCompany, getCompanies, updateCompany } from "../../api/company.api.js";
+import { useNavigate } from "react-router-dom";
+import { FiEdit } from "react-icons/fi";
 
 
-function CompanyPage() {
+function CompanyListPage() {
     const [companies, setCompanies] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingData, setEditingData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const navigate = useNavigate();
 
     const fetchCompanies = useCallback(async () => {
         setLoading(true);
@@ -89,7 +93,7 @@ function CompanyPage() {
                 <h2 className="text-3xl font-bold text-gray-800">🏢 Company Management</h2>
                 <button
                     onClick={openAdd}
-                    className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg shadow-md transition duration-150 ease-in-out"
+                    className="cursor-pointer px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium shadow-md transition duration-150 ease-in-out"
                 >
                     + Add New Company
                 </button>
@@ -106,40 +110,46 @@ function CompanyPage() {
                     {companies.map((company) => (
                         <div
                             key={company.code}
-                            className="bg-white border border-gray-100 rounded-xl p-5 shadow-lg hover:shadow-xl transition duration-300 flex flex-col"
+                            className="group relative cursor-pointer bg-white border border-gray-100 p-5 shadow-lg hover:shadow-xl transition duration-300 flex flex-col min-h-[250px]"
+                            onClick={() => navigate(`/admin/companies/${company.code}/departments`)}
                         >
+                            {/* ปุ่ม Edit แบบ Icon - มุมขวาบน */}
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // หยุดการ Navigate เมื่อกดปุ่มแก้ไข
+                                    openEdit(company);
+                                }}
+                                className="absolute top-4 right-4 p-2.5 text-gray-500 hover:text-gray-700 hover:scale-125 active:scale-95 transition-all duration-200 z-1 cursor-pointer"
+                                title="Edit Company"
+                            >
+                                <FiEdit size={18} />
+                            </button>
+
                             {/* Company Image/Logo */}
                             {company.imageUrl && (
                                 <img
                                     src={company.imageUrl}
                                     alt={`${company.name} logo`}
-                                    className="w-full h-32 object-contain bg-gray-50 rounded-lg mb-3"
+                                    className="w-full h-32 object-contain bg-gray-50 rounded-lg mb-4"
                                 />
                             )}
 
-                            <h3 className="text-xl font-semibold text-gray-900 truncate">
-                                {company.name}
-                            </h3>
-                            <p className="text-sm text-indigo-600 font-medium mb-2">
-                                Code: {company.code || 'N/A'}
-                            </p>
+                            <div className="pr-10"> {/* เว้นระยะขวาไว้กันชื่อทับ Icon */}
+                                <h3 className="text-xl font-bold text-gray-900 truncate">
+                                    {company.name}
+                                </h3>
+                                <p className="text-sm text-orange-500 font-semibold mb-2">
+                                    Code: {company.code || 'N/A'}
+                                </p>
+                            </div>
 
-                            <p className="text-sm text-gray-600 flex-grow mb-3 line-clamp-2">
+                            <p className="text-sm text-gray-600 grow mb-4 line-clamp-2">
                                 {company.description || 'No description provided.'}
                             </p>
 
-                            <p className="text-xs text-gray-500 mb-4 flex items-center">
-                                <span className="mr-1">📍</span> {company.address?.fullAddress || 'Address not listed'}
-                            </p>
-
-                            {/* Actions */}
-                            <div className="flex gap-3 pt-3 border-t border-gray-100">
-                                <button
-                                    onClick={() => openEdit(company)}
-                                    className="cursor-pointer flex-1 px-3 py-1 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-150"
-                                >
-                                    Edit
-                                </button>
+                            <div className="flex items-center text-xs text-gray-400 pt-3 border-t border-gray-50">
+                                <span className="mr-1.5">📍</span>
+                                <span className="truncate">{company.address?.fullAddress || 'Address not listed'}</span>
                             </div>
                         </div>
                     ))}
@@ -158,4 +168,4 @@ function CompanyPage() {
     );
 }
 
-export default CompanyPage;
+export default CompanyListPage;

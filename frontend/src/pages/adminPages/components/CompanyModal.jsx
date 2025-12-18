@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import ImageUploader from "../../../components/ImageUploader";
 import ModalTemplate from "../../../components/ModalTemplate";
+import { validateDecimal, validateNumber } from "../../../utils/inputValidation";
 
 
 function CompanyModal({ open, initialData, onSave, onClose }) {
@@ -43,7 +44,7 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
             setForm(emptyForm);
         }
         setErrors({});
-    }, [initialData]);
+    }, [initialData, open]);
 
     const normalizeForm = (form) => {
         const hasAddress =
@@ -113,151 +114,165 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
         <ModalTemplate
             onClose={onClose}
             header={
-                <p className="text-lg font-semibold text-white">
+                <p className="text-2xl font-bold uppercase">
                     {form.id ? "Edit Company" : "Add New Company"}
                 </p>
             }
         >
-            <div className="flex flex-col gap-3 items-center">
-                <ImageUploader
-                    image={form.image}
-                    imagePreview={form.imagePreview}
-                    setImage={(file, preview) =>
-                        setForm({
-                            ...form,
-                            image: file,
-                            imagePreview: preview,
-                        })
-                    }
-                />
-
-                {/* Code */}
-                <div className="w-full">
-                    <input
-                        type="text"
-                        placeholder="Company Code"
-                        value={form.code}
-                        onChange={(e) =>
-                            handleChange("code", e.target.value)
+            <div className="flex flex-col gap-4 items-center">
+                <div className="w-full flex gap-4">
+                    <ImageUploader
+                        image={form.image}
+                        imagePreview={form.imagePreview}
+                        setImage={(file, preview) =>
+                            setForm({
+                                ...form,
+                                image: file,
+                                imagePreview: preview,
+                            })
                         }
-                        className={`border p-2 rounded w-full ${
-                            errors.code ? "border-red-500" : ""
-                        }`}
                     />
-                    {errors.code && (
-                        <p className="text-red-600 text-sm">{errors.code}</p>
-                    )}
-                </div>
 
-                {/* Name */}
-                <div className="w-full">
-                    <input
-                        type="text"
-                        placeholder="Company Name"
-                        value={form.name}
-                        onChange={(e) =>
-                            handleChange("name", e.target.value)
-                        }
-                        className={`border p-2 rounded w-full ${
-                            errors.name ? "border-red-500" : ""
-                        }`}
-                    />
-                    {errors.name && (
-                        <p className="text-red-600 text-sm">{errors.name}</p>
-                    )}
+                    <div className="flex-1 flex flex-col gap-4">
+                        {/* Code */}
+                        <div className="input-container">
+                            <input
+                                type="text"
+                                placeholder=" "
+                                value={form.code}
+                                onChange={(e) =>
+                                    handleChange("code", e.target.value)
+                                }
+                                className={`${errors.code ? "border-red" : ""}`}
+                            />
+                            <label className="required">Company Code</label>
+                        </div>
+
+                        {/* Name */}
+                        <div className="input-container">
+                            <input
+                                type="text"
+                                placeholder=" "
+                                value={form.name}
+                                onChange={(e) =>
+                                    handleChange("name", e.target.value)
+                                }
+                                className={`${errors.name ? "border-red" : ""}`}
+                            />
+                            <label className="required">Company Name</label>
+                        </div>
+
+                        {/* Active Toggle */}
+                        <div className="flex justify-end">
+                            <div className="input-container">
+                                <button
+                                    type="button"
+                                    className={`w-12 h-6 p-1 transition-colors cursor-pointer ${
+                                        form.isActive ? "bg-gray-700" : "bg-gray-300"
+                                    }`}
+                                    onClick={() =>
+                                        handleChange("isActive", !form.isActive)
+                                    }
+                                >
+                                    <span
+                                        className={`block w-4 h-4 bg-white shadow transform transition-transform ${
+                                            form.isActive
+                                                ? "translate-x-6"
+                                                : "translate-x-0"
+                                        }`}
+                                    />
+                                </button>
+                                <label className="floated-label">Is active?</label>
+                            </div>                            
+                        </div>
+                    </div>
                 </div>
 
                 {/* Description */}
-                <textarea
-                    placeholder="Description"
-                    rows="3"
-                    value={form.description}
-                    onChange={(e) =>
-                        handleChange("description", e.target.value)
-                    }
-                    className="border p-2 rounded w-full"
-                />
-
-                {/* Active Toggle */}
-                <div className="w-full flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <p className="font-bold">Active</p>
-                        <p className="text-sm text-gray-500">
-                            {form.isActive ? "Yes" : "No"}
-                        </p>
-                    </div>
-
-                    <button
-                        type="button"
-                        className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                            form.isActive ? "bg-gray-700" : "bg-gray-300"
-                        }`}
-                        onClick={() =>
-                            handleChange("isActive", !form.isActive)
+                <div className="input-container w-full">
+                    <textarea
+                        placeholder=" "
+                        rows="3"
+                        value={form.description}
+                        onChange={(e) =>
+                            handleChange("description", e.target.value)
                         }
-                    >
-                        <span
-                            className={`block w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
-                                form.isActive
-                                    ? "translate-x-6"
-                                    : "translate-x-0"
-                            }`}
-                        />
-                    </button>
+                    />
+                    <label>Description</label>              
                 </div>
 
                 {/* Address & Coordinates */}
-                <div className="w-full flex flex-col gap-3">
+                <div className="w-full flex flex-col gap-4">
                     <p className="font-bold">Address</p>
 
-                    <textarea
-                        placeholder="Full Address"
-                        rows={3}
-                        value={form.address.fullAddress}
-                        onChange={(e) =>
-                            handleAddressChange("fullAddress", e.target.value)
-                        }
-                        className="border p-2 rounded w-full"
-                    />
+                    {/* Full Address */}
+                    <div className="input-container">
+                        <textarea
+                            placeholder=" "
+                            rows={3}
+                            value={form.address.fullAddress}
+                            onChange={(e) =>
+                                handleAddressChange("fullAddress", e.target.value)
+                            }
+                        />
+                        <label>Full Address</label>
+                    </div>
 
-                    <input
-                        type="number"
-                        step="0.000001"
-                        placeholder="Latitude"
-                        value={form.address.latitude ?? ""}
-                        onChange={(e) =>
-                            handleAddressChange("latitude", e.target.value)
-                        }
-                        className="border p-2 rounded w-full"
-                    />
+                    {/* Latitude */}
+                    <div className="input-container">
+                        <input
+                            type="number"
+                            step="0.000001"
+                            onInput={(e) =>
+                                validateDecimal(e.target, {minVal: -90, maxVal: 90})
+                            }
+                            placeholder=" "
+                            value={form.address.latitude ?? ""}
+                            onChange={(e) =>
+                                handleAddressChange("latitude", e.target.value)
+                            }
+                        />
+                        <label>Latitude</label>
+                    </div>
 
-                    <input
-                        type="number"
-                        step="0.000001"
-                        placeholder="Longitude"
-                        value={form.address.longitude ?? ""}
-                        onChange={(e) =>
-                            handleAddressChange("longitude", e.target.value)
-                        }
-                        className="border p-2 rounded w-full"
-                    />
+                    {/* Longitude */}
+                    <div className="input-container">
+                        <input
+                            type="number"
+                            step="0.000001"
+                            onInput={(e) =>
+                                validateDecimal(e.target, {minVal: -180, maxVal: 180})
+                            }
+                            placeholder=" "
+                            value={form.address.longitude ?? ""}
+                            onChange={(e) =>
+                                handleAddressChange("longitude", e.target.value)
+                            }
+                        />
+                        <label>Longitude</label>
+                    </div>
 
-                    <input
-                        type="number"
-                        placeholder="Radius (meters)"
-                        value={form.address.radius ?? ""}
-                        onChange={(e) =>
-                            handleAddressChange("radius", e.target.value)
-                        }
-                        className="border p-2 rounded w-full"
-                    />
+                    {/* Radius */}
+                    <div className="input-container">
+                        <input
+                            type="number"
+                            onInput={(e) =>
+                                validateNumber(e.target, {minVal: 0})
+                            }
+                            placeholder=" "
+                            value={form.address.radius ?? ""}
+                            onChange={(e) =>
+                                handleAddressChange("radius", e.target.value)
+                            }
+                        />
+                        <label>Radius (meters)</label>
+                    </div>
                 </div>
-
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
                 <button
-                    className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded cursor-pointer"
+                    className="px-5 py-1 bg-gray-700 hover:bg-gray-800 text-white cursor-pointer shadow-lg hover:shadow-xl"
                     onClick={handleSave}
                 >
                     Save

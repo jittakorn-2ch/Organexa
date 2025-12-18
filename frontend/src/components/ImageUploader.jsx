@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react";
+import { FaTrash, FaPlus  } from "react-icons/fa";
 
 function ImageUploader({ image, setImage }) {
     const handleImageChange = (e) => {
@@ -33,7 +33,7 @@ function ImageUploader({ image, setImage }) {
             {/* Image preview container */}
             <label
                 htmlFor="image-input"
-                className="relative w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-200"
+                className="relative w-32 h-32 bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-200"
             >
                 {image?.preview ? (
                     <>
@@ -53,11 +53,17 @@ function ImageUploader({ image, setImage }) {
                             }}
                             className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 hover:opacity-100 transition cursor-pointer"
                         >
-                            <Trash2 size={28} />
+                            <FaTrash 
+                                size={24}
+                                className="hover:scale-125 active:scale-95"
+                            />
                         </button>
                     </>
                 ) : (
-                    <Plus size={28} className="text-gray-500 hover:opacity-100 transition cursor-pointer" />
+                    <FaPlus
+                        size={14}
+                        className="text-gray-500 hover:opacity-100 transition cursor-pointer hover:scale-125 active:scale-95"
+                    />
                 )}
             </label>
         </div>
