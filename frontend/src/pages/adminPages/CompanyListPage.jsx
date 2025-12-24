@@ -3,6 +3,7 @@ import CompanyModal from "./components/CompanyModal.jsx";
 import { addCompany, getCompanies, updateCompany } from "../../api/company.api.js";
 import { useNavigate } from "react-router-dom";
 import { FiEdit } from "react-icons/fi";
+import { toast } from "react-toastify";
 
 
 function CompanyListPage() {
@@ -49,19 +50,21 @@ function CompanyListPage() {
     };
 
     const saveCompany = async (data) => {
+        setLoading(true);
         try {
             let res;
 
-            console.log("Saving company data:", editingData);
-
             if (editingData) {
-                res = await updateCompany(data.code, data);
+                const code = data.get("code");
+                res = await updateCompany(code, data);
 
                 setCompanies((prev) =>
                     prev.map((c) =>
-                        c.code === data.code ? res.data : c
+                        c.code === code ? res.data : c
                     )
                 );
+
+                toast.success("Company updated successfully!");
             } else {
                 res = await addCompany(data);
 
@@ -69,13 +72,16 @@ function CompanyListPage() {
                     res.data,
                     ...prev,
                 ]);
+
+                toast.success("Company added successfully!");
             }
 
             closeModal();
         } catch (error) {
             console.error("Save company failed:", error);
-            alert("ไม่สามารถบันทึกข้อมูลได้");
+            toast.error("Failed to save company. Please try again.");
         }
+        setLoading(false);
     };
 
     if (loading) {
@@ -88,7 +94,6 @@ function CompanyListPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            {/* Header and Add Button */}
             <div className="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 className="text-3xl font-bold text-gray-800">🏢 Company Management</h2>
                 <button
@@ -99,7 +104,6 @@ function CompanyListPage() {
                 </button>
             </div>
 
-            {/* Company Cards Grid */}
             {companies.length === 0 ? (
                 <div className="text-center p-10 border-gray-300 text-gray-500">
                     <p className="text-lg mb-2">No companies found.</p>
@@ -113,10 +117,9 @@ function CompanyListPage() {
                             className="group relative cursor-pointer bg-white border border-gray-100 p-5 shadow-lg hover:shadow-xl transition duration-300 flex flex-col min-h-[250px]"
                             onClick={() => navigate(`/admin/companies/${company.code}/departments`)}
                         >
-                            {/* ปุ่ม Edit แบบ Icon - มุมขวาบน */}
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation(); // หยุดการ Navigate เมื่อกดปุ่มแก้ไข
+                                    e.stopPropagation();
                                     openEdit(company);
                                 }}
                                 className="absolute top-4 right-4 p-2.5 text-gray-500 hover:text-gray-700 hover:scale-125 active:scale-95 transition-all duration-200 z-1 cursor-pointer"
@@ -125,7 +128,6 @@ function CompanyListPage() {
                                 <FiEdit size={18} />
                             </button>
 
-                            {/* Company Image/Logo */}
                             {company.imageUrl && (
                                 <img
                                     src={company.imageUrl}
@@ -134,7 +136,7 @@ function CompanyListPage() {
                                 />
                             )}
 
-                            <div className="pr-10"> {/* เว้นระยะขวาไว้กันชื่อทับ Icon */}
+                            <div className="pr-10">
                                 <h3 className="text-xl font-bold text-gray-900 truncate">
                                     {company.name}
                                 </h3>
@@ -156,12 +158,10 @@ function CompanyListPage() {
                 </div>
             )}
 
-
-            {/* Modal Component */}
             <CompanyModal
                 open={modalOpen}
                 initialData={editingData}
-                onSave={saveCompany} // This handles both create and update
+                onSave={saveCompany}
                 onClose={closeModal}
             />
         </div>

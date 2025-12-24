@@ -23,6 +23,11 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
     const [form, setForm] = useState(emptyForm);
     const [errors, setErrors] = useState({});
 
+    const to2Digit = (val) =>
+        val !== null && val !== undefined
+            ? Number(val).toFixed(2)
+            : null;
+
     // Load initial data when editing
     useEffect(() => {
         if (initialData) {
@@ -32,13 +37,13 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
                 description: initialData.description,
                 address: {
                     fullAddress: initialData.address?.fullAddress ?? "",
-                    latitude: initialData.address?.latitude ?? null,
-                    longitude: initialData.address?.longitude ?? null,
-                    radius: initialData.address?.radius ?? null,
+                    latitude: to2Digit(initialData.address?.latitude),
+                    longitude: to2Digit(initialData.address?.longitude),
+                    radius: to2Digit(initialData.address?.radius),
                 },
                 isActive: initialData.isActive ?? true,
                 image: null,
-                imagePreview: initialData.imageUrl ?? null,
+                imagePreview: initialData.imageUrl || null,
             });
         } else {
             setForm(emptyForm);
@@ -46,41 +51,11 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
         setErrors({});
     }, [initialData, open]);
 
-    const normalizeForm = (form) => {
-        const hasAddress =
-            form.address?.fullAddress ||
-            form.address?.latitude ||
-            form.address?.longitude ||
-            form.address?.radius;
-
-        return {
-            code: form.code,
-            name: form.name,
-            description: form.description || null,
-            isActive: form.isActive,
-
-            address: hasAddress
-                ? {
-                    fullAddress: form.address.fullAddress || null,
-                    latitude: form.address.latitude
-                        ? Number(form.address.latitude)
-                        : null,
-                    longitude: form.address.longitude
-                        ? Number(form.address.longitude)
-                        : null,
-                    radius: form.address.radius
-                        ? Number(form.address.radius)
-                        : null,
-                }
-                : null,
-        };
-    };
-
     if (!open) return null;
 
     const handleChange = (field, value) => {
         setForm((prev) => ({ ...prev, [field]: value }));
-        setErrors((prev) => ({ ...prev, [field]: null })); // clear error
+        setErrors((prev) => ({ ...prev, [field]: null }));
     };
 
     const handleAddressChange = (field, value) => {
@@ -106,7 +81,35 @@ function CompanyModal({ open, initialData, onSave, onClose }) {
     const handleSave = () => {
         if (!validate()) return;
 
-        const data = normalizeForm({ ...form, image: form.image });
+        const data = new FormData();
+        data.append("code", form.code);
+        data.append("name", form.name);
+        data.append("description", form.description || "");
+        data.append("is_active", form.isActive);
+
+        if (form.image && form.image.file) {
+            data.append("image", form.image.file);
+        } else if (!form.imagePreview) {
+            data.append("image", ""); 
+        }
+
+        const hasAddressData = form.address && form.address.fullAddress && form.address.fullAddress.trim() !== "";
+        if (hasAddressData) {
+            const addressObj = {
+                full_address: form.address.fullAddress,
+                latitude: form.address.latitude,
+                longitude: form.address.longitude,
+                radius: form.address.radius
+            };
+            data.append("address", JSON.stringify(addressObj));
+        } else {
+            data.append("address", null); 
+        }
+
+        for (var pair of data.entries()) {
+            console.log(pair[0] + ', ' + pair[1]); 
+        }
+
         onSave(data);
     };
 

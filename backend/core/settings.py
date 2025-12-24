@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+from os.path import join
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -64,6 +65,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "org",
+
+    "django_cleanup.apps.CleanupConfig"
 ]
 
 MIDDLEWARE = [
@@ -151,3 +154,13 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = join(BASE_DIR, "media")
+
+STATIC_URL = "/static/"
+STATIC_ROOT = join(BASE_DIR, "staticfiles")
+
+STATICFILES_DIRS = [
+    join(BASE_DIR, "static"),
+]

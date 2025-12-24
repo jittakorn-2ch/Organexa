@@ -1,6 +1,7 @@
 import { FaTrash, FaPlus  } from "react-icons/fa";
 
-function ImageUploader({ image, setImage }) {
+function ImageUploader({ image, imagePreview, setImage }) {
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -18,10 +19,17 @@ function ImageUploader({ image, setImage }) {
         });
     };
 
+    const getDisplaySource = () => {
+        if (image?.preview) return image.preview;
+        if (imagePreview) return imagePreview;
+
+        return null;
+    };
+
+    const displaySrc = getDisplaySource();
+
     return (
         <div className="flex flex-col items-center gap-2">
-
-            {/* Input file */}
             <input
                 id="image-input"
                 type="file"
@@ -30,20 +38,18 @@ function ImageUploader({ image, setImage }) {
                 className="hidden"
             />
 
-            {/* Image preview container */}
             <label
                 htmlFor="image-input"
-                className="relative w-32 h-32 bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-200"
+                className="group relative w-32 h-32 bg-gray-100 flex items-center justify-center cursor-pointer overflow-hidden border border-gray-200"
             >
-                {image?.preview ? (
+                {displaySrc ? (
                     <>
                         <img
-                            src={image.preview}
+                            src={displaySrc}
                             alt="Uploaded"
                             className="w-full h-full object-cover"
                         />
 
-                        {/* Trash icon (overlay center) */}
                         <button
                             type="button"
                             onClick={(e) => {
@@ -51,18 +57,18 @@ function ImageUploader({ image, setImage }) {
                                 e.stopPropagation();
                                 removeImage();
                             }}
-                            className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 hover:opacity-100 transition cursor-pointer"
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-0 group-hover:opacity-100 transition cursor-pointer"
                         >
-                            <FaTrash 
-                                size={24}
-                                className="hover:scale-125 active:scale-95"
+                            <FaTrash
+                                size={14}
+                                className="transition-transform group-hover:scale-125 active:scale-95"
                             />
                         </button>
                     </>
                 ) : (
                     <FaPlus
                         size={14}
-                        className="text-gray-500 hover:opacity-100 transition cursor-pointer hover:scale-125 active:scale-95"
+                        className="text-gray-500 transition-transform group-hover:scale-125 active:scale-95"
                     />
                 )}
             </label>
